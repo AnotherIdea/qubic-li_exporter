@@ -32,40 +32,40 @@ def connect():
 
 
 def find_metrics():
-    token = connect()
-    headers = {
-        "authority": "api.qubic.li",
-        "accept": "application/json",
-        "accept-language": "fr-FR,fr;q=0.8",
-        "authorization": f"Bearer {token}",
-        "origin": "https://app.qubic.li",
-        "referer": "https://app.qubic.li/",
-        "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
-    }
+    try:
+        token = connect()
+        headers = {
+            "authority": "api.qubic.li",
+            "accept": "application/json",
+            "accept-language": "fr-FR,fr;q=0.8",
+            "authorization": f"Bearer {token}",
+            "origin": "https://app.qubic.li",
+            "referer": "https://app.qubic.li/",
+            "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
+        }
 
-    response = requests.get(
-        BASE_URL + "/My/Pool/f4535705-eeac-4c4f-9ddc-4c3a91b40b13/Performance",
-        headers=headers,
-    )
+        response = requests.get(
+            BASE_URL + "/My/Pool/f4535705-eeac-4c4f-9ddc-4c3a91b40b13/Performance",
+            headers=headers,
+        )
 
-    print(response.json())
-    qubic_li_found_solutions.set(response.json()["foundSolutions"])
-    
-    for miner in response.json()["miners"]:
-        #qubic_li_miner_name.labels(alias=miner["alias"]).info(miner["alias"])
-        qubic_li_miner_currentIts.labels(alias=miner["alias"]).set(miner["currentIts"])
-        qubic_li_miner_solutionsFound.labels(alias=miner["alias"]).set(miner["solutionsFound"])
-        qubic_li_miner_isActive.labels(alias=miner["alias"]).set(miner["isActive"])
+        qubic_li_found_solutions.set(response.json()["foundSolutions"])
+        
+        for miner in response.json()["miners"]:
+            #qubic_li_miner_name.labels(alias=miner["alias"]).info(miner["alias"])
+            qubic_li_miner_currentIts.labels(alias=miner["alias"]).set(miner["currentIts"])
+            qubic_li_miner_solutionsFound.labels(alias=miner["alias"]).set(miner["solutionsFound"])
+            qubic_li_miner_isActive.labels(alias=miner["alias"]).set(miner["isActive"])
+    except Exception as e:
+        print(e)
 
 
 
 
 
 if __name__ == "__main__":
-    # Démarrer le serveur pour exposer les métriques à Prometheus sur le port 8000
     start_http_server(9000)
-    print("Serveur exposant les métriques démarré sur le port 9000")
 
     while True:
         find_metrics()
-        time.sleep(5)  # Attendre 5 secondes avant de trouver la prochaine solution
+        time.sleep(30)
